@@ -2,28 +2,40 @@
 
 Quick semantic segmentation study for the dataset in `dataset/`.
 
-## Setup
+The repo is intentionally simple. Run commands from the repo root:
 
-Use the existing `cook` conda environment, then install dependencies:
+```powershell
+cd G:\Other\nazarai_seg
+```
+
+## 1. Local Conda Setup
+
+Use the existing `cook` environment:
 
 ```powershell
 conda activate cook
-python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 ```
 
-The requirements pin CUDA 12.1 PyTorch wheels for an RTX 4060. If your local CUDA driver cannot use these wheels, install the matching PyTorch build from the official PyTorch selector inside the `cook` conda environment, then install the remaining packages.
+`requirements.txt` does not install PyTorch. Your `cook` environment already has a working CUDA PyTorch stack. If you ever need to reinstall CUDA PyTorch in this env, use:
 
-## Smoke Checks
+```powershell
+python -m pip install -r requirements-torch-cu121.txt
+```
+
+Validate the dataset:
 
 ```powershell
 python validate_data.py
-python train.py "study.models=[unet]" study.n_trials=1 study.max_folds=1 training.max_epochs=1 data.batch_size=1
-python infer.py model_name=unet checkpoint_path=outputs/checkpoints/unet/best.ckpt inference.limit=5
-python summarize_results.py
 ```
 
-## Full Study
+Run a small smoke training job:
+
+```powershell
+python train.py "study.models=[unet]" study.n_trials=1 study.max_folds=1 training.max_epochs=1 data.batch_size=1
+```
+
+Run the full study:
 
 ```powershell
 python train.py
@@ -31,6 +43,47 @@ python infer.py model_name=unet checkpoint_path=outputs/checkpoints/unet/best.ck
 python infer.py model_name=deeplabv3plus checkpoint_path=outputs/checkpoints/deeplabv3plus/best.ckpt
 python infer.py model_name=pspnet checkpoint_path=outputs/checkpoints/pspnet/best.ckpt
 python summarize_results.py
+```
+
+## 2. Docker Setup
+
+The Docker image assumes the dataset folder exists in the repo as:
+
+```text
+dataset/
+  images/
+  masks/
+  labelmap.txt
+```
+
+Build the image:
+
+```powershell
+docker build -t nazarai-seg .
+```
+
+Validate the dataset inside the image:
+
+```powershell
+docker run --rm nazarai-seg python validate_data.py
+```
+
+Run a GPU smoke training job and keep outputs on the host:
+
+```powershell
+docker run --rm --gpus all -v "${PWD}\outputs:/workspace/outputs" nazarai-seg python train.py "study.models=[unet]" study.n_trials=1 study.max_folds=1 training.max_epochs=1 data.batch_size=1
+```
+
+Run the full study:
+
+```powershell
+docker run --rm --gpus all -v "${PWD}\outputs:/workspace/outputs" nazarai-seg python train.py
+```
+
+For Linux/macOS shells, replace the volume path with:
+
+```bash
+docker run --rm --gpus all -v "$(pwd)/outputs:/workspace/outputs" nazarai-seg python train.py
 ```
 
 TensorBoard logs are written under `outputs/tensorboard/`.

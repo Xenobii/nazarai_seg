@@ -164,14 +164,15 @@ def build_transform(
     if is_train:
         transforms.extend(
             [
-                alb.ShiftScaleRotate(
-                    shift_limit=0.0,
-                    scale_limit=0.15,
-                    rotate_limit=20,
+                alb.Affine(
+                    translate_percent=0.0,
+                    scale=(0.85, 1.15),
+                    rotate=(-20, 20),
                     interpolation=cv2.INTER_LINEAR,
+                    mask_interpolation=cv2.INTER_NEAREST,
                     border_mode=cv2.BORDER_CONSTANT,
-                    value=0,
-                    mask_value=0,
+                    fill=0,
+                    fill_mask=0,
                     p=0.7,
                 ),
                 alb.HorizontalFlip(p=0.5),

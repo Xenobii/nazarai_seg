@@ -64,3 +64,4 @@ temp/
 # Notebook checkpoints
 .ipynb_checkpoints/
 dataset/
+dataset.zip

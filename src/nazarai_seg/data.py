@@ -302,6 +302,8 @@ def make_loader(
     transform: alb.Compose,
     batch_size: int,
     num_workers: int,
+    prefetch_factor: int,
+    persistent_workers: bool,
     canvas_height: int,
     canvas_width: int,
     shuffle: bool,
@@ -316,11 +318,17 @@ def make_loader(
         include_paths=include_paths,
     )
     subset = Subset(dataset, indices)
+    loader_kwargs: dict[str, object] = {
+        "batch_size": batch_size,
+        "shuffle": shuffle,
+        "num_workers": num_workers,
+        "pin_memory": torch.cuda.is_available(),
+    }
+    if num_workers > 0:
+        loader_kwargs["prefetch_factor"] = prefetch_factor
+        loader_kwargs["persistent_workers"] = persistent_workers
+
     return DataLoader(
         subset,
-        batch_size=batch_size,
-        shuffle=shuffle,
-        num_workers=num_workers,
-        pin_memory=torch.cuda.is_available(),
-        persistent_workers=num_workers > 0,
+        **loader_kwargs,
     )

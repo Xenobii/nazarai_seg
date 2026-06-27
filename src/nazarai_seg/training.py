@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import csv
+import gc
 import json
 from pathlib import Path
 from typing import Any, Optional
@@ -46,6 +47,8 @@ def train_one_fold(
         transform=train_transform,
         batch_size=cfg.data.batch_size,
         num_workers=cfg.data.num_workers,
+        prefetch_factor=cfg.data.prefetch_factor,
+        persistent_workers=cfg.data.persistent_workers,
         canvas_height=cfg.data.pad_height,
         canvas_width=cfg.data.pad_width,
         shuffle=True,
@@ -56,6 +59,8 @@ def train_one_fold(
         transform=val_transform,
         batch_size=cfg.data.batch_size,
         num_workers=cfg.data.num_workers,
+        prefetch_factor=cfg.data.prefetch_factor,
+        persistent_workers=cfg.data.persistent_workers,
         canvas_height=cfg.data.pad_height,
         canvas_width=cfg.data.pad_width,
         shuffle=False,
@@ -114,7 +119,14 @@ def train_one_fold(
 
     best_score = checkpoint_callback.best_model_score
     score = float(best_score.detach().cpu()) if best_score is not None else 0.0
-    return score, checkpoint_callback.best_model_path
+    checkpoint_path = checkpoint_callback.best_model_path
+    _cleanup_fold_objects(
+        trainer=trainer,
+        lit_module=lit_module,
+        train_loader=train_loader,
+        val_loader=val_loader,
+    )
+    return score, checkpoint_path
 
 
 def tune_model(
@@ -287,6 +299,8 @@ def evaluate_checkpoint(
         transform=transform,
         batch_size=cfg.data.batch_size,
         num_workers=cfg.data.num_workers,
+        prefetch_factor=cfg.data.prefetch_factor,
+        persistent_workers=cfg.data.persistent_workers,
         canvas_height=cfg.data.pad_height,
         canvas_width=cfg.data.pad_width,
         shuffle=False,
@@ -347,6 +361,22 @@ def _resolve_precision(configured_precision: str) -> str:
         return configured_precision
 
     return "32-true"
+
+
+def _cleanup_fold_objects(
+    trainer: pl.Trainer,
+    lit_module: SegmentationLitModule,
+    train_loader: Any,
+    val_loader: Any,
+) -> None:
+    trainer.strategy.teardown()
+    del trainer
+    del lit_module
+    del train_loader
+    del val_loader
+    gc.collect()
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
 
 
 def _write_model_result(cfg: DictConfig, result: dict[str, Any]) -> None:

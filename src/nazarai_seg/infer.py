@@ -44,6 +44,8 @@ def main(cfg: DictConfig) -> None:
         transform=transform,
         batch_size=1,
         num_workers=cfg.data.num_workers,
+        prefetch_factor=cfg.data.prefetch_factor,
+        persistent_workers=cfg.data.persistent_workers,
         canvas_height=cfg.data.pad_height,
         canvas_width=cfg.data.pad_width,
         shuffle=False,

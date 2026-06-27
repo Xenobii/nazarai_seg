@@ -86,10 +86,12 @@ For Linux/macOS shells, replace the volume path with:
 docker run --rm --gpus all -v "$(pwd)/outputs:/workspace/outputs" nazarai-seg python train.py
 ```
 
-The default config uses `data.num_workers=0` because Docker's default shared memory can kill PyTorch DataLoader workers with large images. If you want to try worker processes, run Docker with a larger shared memory segment and override the config:
+The default config uses `data.num_workers=0` because Docker's default shared memory and file descriptor limits can kill PyTorch DataLoader workers with large images. If you want to try worker processes, run Docker with larger shared memory and file limits, and keep persistent workers disabled:
 
 ```powershell
-docker run --rm --gpus all --shm-size=8g -v "${PWD}\outputs:/workspace/outputs" nazarai-seg python train.py data.num_workers=4
+docker run --rm --gpus all --shm-size=8g --ulimit nofile=65535:65535 -v "${PWD}\outputs:/workspace/outputs" nazarai-seg python train.py data.num_workers=4
 ```
+
+Avoid `data.num_workers=16` unless the container has a high `nofile` limit. The training loop creates fresh loaders across folds and trials, so excessive workers can trigger `OSError: [Errno 24] Too many open files`.
 
 TensorBoard logs are written under `outputs/tensorboard/`.

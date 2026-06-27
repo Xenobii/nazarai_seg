@@ -1,0 +1,21 @@
+dataset_root: dataset
+image_dir: images
+mask_dir: masks
+labelmap_path: labelmap.txt
+batch_size: 2
+num_workers: 4
+max_size: 1280
+pad_height: 768
+pad_width: 1280
+class_names:
+  - background
+  - Imprint
+mask_colors:
+  background:
+    - 0
+    - 0
+    - 0
+  Imprint:
+    - 255
+    - 255
+    - 255

@@ -1,0 +1,30 @@
+defaults:
+  - data: default
+  - model: default
+  - training: default
+  - optuna: default
+  - paths: default
+  - _self_
+
+seed: 42
+
+study:
+  models:
+    - unet
+    - deeplabv3plus
+    - pspnet
+  n_trials: 20
+  n_folds: 5
+  max_folds: null
+  dev_fraction: 0.7
+  test_fraction: 0.3
+
+model_name: null
+checkpoint_path: null
+
+inference:
+  limit: null
+
+hydra:
+  job:
+    chdir: false

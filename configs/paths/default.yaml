@@ -1,0 +1,6 @@
+output_dir: outputs
+checkpoint_dir: outputs/checkpoints
+tensorboard_dir: outputs/tensorboard
+results_dir: outputs/results
+inference_dir: outputs/inference
+splits_dir: outputs/splits

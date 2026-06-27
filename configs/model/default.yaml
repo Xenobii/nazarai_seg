@@ -1,0 +1,6 @@
+name: unet
+encoder_name: resnet34
+encoder_weights: imagenet
+classes: 2
+in_channels: 3
+trainable_tail_modules: 3

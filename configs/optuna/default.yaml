@@ -1,0 +1,13 @@
+direction: maximize
+learning_rate:
+  low: 0.00001
+  high: 0.001
+  log: true
+weight_decay:
+  low: 0.0000001
+  high: 0.01
+  log: true
+loss_names:
+  - cross_entropy
+  - dice
+  - ce_dice

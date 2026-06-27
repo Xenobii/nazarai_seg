@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import hydra
 import pytorch_lightning as pl
 from omegaconf import DictConfig
 
+from nazarai_seg.config_runner import run_with_config
 from nazarai_seg.data import list_samples, make_cv_folds, make_split_indices
 from nazarai_seg.training import (
     save_resolved_config,
@@ -15,7 +15,6 @@ from nazarai_seg.training import (
 )
 
 
-@hydra.main(version_base=None, config_path="../../configs", config_name="config")
 def main(cfg: DictConfig) -> None:
     """Run the Optuna cross-validation training study."""
     pl.seed_everything(cfg.seed, workers=True)
@@ -59,4 +58,4 @@ def main(cfg: DictConfig) -> None:
 
 
 if __name__ == "__main__":
-    main()
+    run_with_config(main)

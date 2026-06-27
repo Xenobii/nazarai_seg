@@ -2,13 +2,12 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import hydra
 from omegaconf import DictConfig
 
+from nazarai_seg.config_runner import run_with_config
 from nazarai_seg.data import validate_dataset
 
 
-@hydra.main(version_base=None, config_path="../../configs", config_name="config")
 def main(cfg: DictConfig) -> None:
     """Validate dataset pairing, dimensions, and mask colors."""
     for message in validate_dataset(
@@ -20,4 +19,4 @@ def main(cfg: DictConfig) -> None:
 
 
 if __name__ == "__main__":
-    main()
+    run_with_config(main)

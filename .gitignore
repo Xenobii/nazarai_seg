@@ -38,10 +38,15 @@ desktop.ini
 
 # Hydra, Lightning, TensorBoard, and study outputs
 outputs/
+**/outputs/
 multirun/
+**/multirun/
 lightning_logs/
+**/lightning_logs/
 runs/
+**/runs/
 wandb/
+**/wandb/
 
 # Model artifacts
 *.ckpt

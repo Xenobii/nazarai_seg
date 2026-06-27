@@ -4,11 +4,10 @@ import csv
 import json
 from pathlib import Path
 
-import hydra
 from omegaconf import DictConfig
 
+from nazarai_seg.config_runner import run_with_config
 
-@hydra.main(version_base=None, config_path="../../configs", config_name="config")
 def main(cfg: DictConfig) -> None:
     """Write a Markdown comparison table from study results."""
     results_dir = Path(cfg.paths.results_dir)
@@ -44,4 +43,4 @@ def _read_rows(csv_path: Path) -> list[dict[str, str]]:
 
 
 if __name__ == "__main__":
-    main()
+    run_with_config(main)

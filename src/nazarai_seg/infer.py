@@ -2,19 +2,18 @@ from __future__ import annotations
 
 from pathlib import Path
 import cv2
-import hydra
 import numpy as np
 import torch
 from omegaconf import DictConfig
 from PIL import Image
 from torch import Tensor
 
+from nazarai_seg.config_runner import run_with_config
 from nazarai_seg.data import build_transform, list_samples, make_loader
 from nazarai_seg.lightning_module import SegmentationLitModule
 from nazarai_seg.models import create_model
 
 
-@hydra.main(version_base=None, config_path="../../configs", config_name="config")
 def main(cfg: DictConfig) -> None:
     """Run full-dataset inference for one trained checkpoint."""
     model_name = cfg.model_name or cfg.model.name
@@ -134,4 +133,4 @@ def _resize_to_canvas_image(
 
 
 if __name__ == "__main__":
-    main()
+    run_with_config(main)

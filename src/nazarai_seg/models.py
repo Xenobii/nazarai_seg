@@ -28,27 +28,3 @@ def create_model(
         in_channels=in_channels,
         classes=classes,
     )
-
-
-def freeze_except_tail_modules(
-    model: nn.Module,
-    trainable_tail_modules: int,
-) -> list[str]:
-    """Freeze a model except the final parameter-owning modules."""
-    for parameter in model.parameters():
-        parameter.requires_grad = False
-
-    parameter_modules: list[tuple[str, nn.Module]] = []
-    for name, module in model.named_modules():
-        direct_parameters = list(module.parameters(recurse=False))
-        if direct_parameters:
-            parameter_modules.append((name, module))
-
-    selected_modules = parameter_modules[-trainable_tail_modules:]
-    trainable_names: list[str] = []
-    for name, module in selected_modules:
-        trainable_names.append(name)
-        for parameter in module.parameters(recurse=False):
-            parameter.requires_grad = True
-
-    return trainable_names

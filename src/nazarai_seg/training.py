@@ -14,7 +14,7 @@ from pytorch_lightning.loggers import TensorBoardLogger
 
 from nazarai_seg.data import build_transform, make_loader
 from nazarai_seg.lightning_module import SegmentationLitModule
-from nazarai_seg.models import create_model, freeze_except_tail_modules
+from nazarai_seg.models import create_model
 
 
 def train_one_fold(
@@ -26,7 +26,7 @@ def train_one_fold(
     fold_index: int,
     trial_number: int,
     samples: list[Any],
-) -> tuple[float, Optional[str], list[str]]:
+) -> tuple[float, Optional[str]]:
     """Train one CV fold and return best validation mIoU."""
     train_transform = build_transform(
         is_train=True,
@@ -67,10 +67,6 @@ def train_one_fold(
         encoder_weights=cfg.model.encoder_weights,
         in_channels=cfg.model.in_channels,
         classes=cfg.model.classes,
-    )
-    trainable_modules = freeze_except_tail_modules(
-        model=model,
-        trainable_tail_modules=cfg.model.trainable_tail_modules,
     )
     lit_module = SegmentationLitModule(
         model=model,
@@ -118,7 +114,7 @@ def train_one_fold(
 
     best_score = checkpoint_callback.best_model_score
     score = float(best_score.detach().cpu()) if best_score is not None else 0.0
-    return score, checkpoint_callback.best_model_path, trainable_modules
+    return score, checkpoint_callback.best_model_path
 
 
 def tune_model(
@@ -153,9 +149,8 @@ def tune_model(
         }
         fold_scores: list[float] = []
         checkpoint_paths: list[str] = []
-        trainable_modules: list[str] = []
         for fold_index, (train_indices, val_indices) in enumerate(active_folds):
-            score, checkpoint_path, trainable_modules = train_one_fold(
+            score, checkpoint_path = train_one_fold(
                 cfg=cfg,
                 model_name=model_name,
                 train_indices=train_indices,
@@ -171,7 +166,6 @@ def tune_model(
 
         trial.set_user_attr("fold_scores", fold_scores)
         trial.set_user_attr("checkpoint_paths", checkpoint_paths)
-        trial.set_user_attr("trainable_modules", trainable_modules)
         return sum(fold_scores) / len(fold_scores)
 
     study = optuna.create_study(direction=cfg.optuna.direction)
@@ -197,7 +191,6 @@ def tune_model(
         "best_params": best_trial.params,
         "fold_scores": best_trial.user_attrs.get("fold_scores", []),
         "checkpoint_path": str(best_checkpoint) if best_checkpoint is not None else "",
-        "trainable_modules": best_trial.user_attrs.get("trainable_modules", []),
     }
     _write_model_result(cfg=cfg, result=result)
     return result
@@ -219,7 +212,6 @@ def write_study_results(cfg: DictConfig, results: list[dict[str, Any]]) -> None:
                 "best_params",
                 "fold_scores",
                 "checkpoint_path",
-                "trainable_modules",
             ],
         )
         writer.writeheader()
@@ -232,7 +224,6 @@ def write_study_results(cfg: DictConfig, results: list[dict[str, Any]]) -> None:
                     "best_params": json.dumps(result["best_params"]),
                     "fold_scores": json.dumps(result["fold_scores"]),
                     "checkpoint_path": result["checkpoint_path"],
-                    "trainable_modules": json.dumps(result["trainable_modules"]),
                 }
             )
 

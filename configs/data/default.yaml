@@ -3,7 +3,7 @@ image_dir: images
 mask_dir: masks
 labelmap_path: labelmap.txt
 batch_size: 2
-num_workers: 4
+num_workers: 0
 max_size: 1280
 pad_height: 768
 pad_width: 1280

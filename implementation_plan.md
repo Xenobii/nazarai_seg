@@ -10,7 +10,7 @@ Use a 70/30 fixed holdout split, then run 5-fold cross validation inside the 70%
 
 - Create a lightweight Python project scaffold with `requirements.txt`, Hydra configs, a `src/nazarai_seg/` package, and module entry points for training, inference, and result summarization.
 - Use `segmentation-models-pytorch` for `Unet`, `DeepLabV3Plus`, and `PSPNet` with `resnet34` ImageNet encoders and two output classes.
-- Freeze all model parameters except the final three parameter-owning modules discovered by traversal order, and log the selected trainable module names for each run.
+- Train all model parameters for each segmentation model.
 - Decode masks by exact RGB mapping: `(0, 0, 0) -> 0` background and `(255, 255, 255) -> 1` Imprint.
 - Use Albumentations for aspect-preserving resize, padding, scale, rotation, and flip augmentation.
 - Use AdamW, standard segmentation losses, TorchMetrics mIoU, Optuna trial search, TensorBoard logs, checkpoint saving, and inference overlays.
